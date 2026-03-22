@@ -4,8 +4,8 @@ const TREE_COUNT = 80
 const OUTER_RADIUS = 120
 
 // Rectangular exclusion zone — building + porches + clearance
-const EXCL_X = 18   // HW(14.5) + porch/clearance
-const EXCL_Z = 22   // HD(13.71) + porch depth(5) + clearance
+const EXCL_X = 16   // HW(12.5) + porch/clearance
+const EXCL_Z = 22   // HD(13.125) + porch depth(6) + clearance
 
 function seededRand(seed) {
   let s = seed
