@@ -1,0 +1,407 @@
+{
+  "meta": {
+    "project": "112 Allissia Coach House",
+    "areaSqFt": 795,
+    "scale": "1 unit = 1 foot",
+    "source": "Evolution Design & Drafting, March 20 2026",
+    "coordinateSystem": {
+      "origin": "center of building footprint",
+      "X": "+East / -West",
+      "Y": "+Up",
+      "Z": "+South (front) / -North (rear)"
+    }
+  },
+
+  "building": {
+    "exteriorWidth": 29.0,
+    "exteriorDepth": 27.42,
+    "halfWidth": 14.5,
+    "halfDepth": 13.71,
+    "wallThickness": { "exterior": 0.5, "interior": 0.42 }
+  },
+
+  "heights": {
+    "standard": 8.5,
+    "vaultPeak": 11.0,
+    "foundationDepth": 1.5
+  },
+
+  "rooms": [
+    {
+      "id": "bedroom2",
+      "name": "Bedroom 2 / Laundry",
+      "corner": "NW",
+      "interiorBounds": {
+        "west": -14.25,
+        "east": -4.13,
+        "north": -13.46,
+        "south": -2.88
+      },
+      "nominalSize": { "width": "10'-7\"", "depth": "10'-7\"" },
+      "ceilingHeight": 8.5
+    },
+    {
+      "id": "bathroom",
+      "name": "Bathroom",
+      "corner": "N-center",
+      "interiorBounds": {
+        "west": -3.71,
+        "east": 1.25,
+        "north": -13.46,
+        "south": -6.17
+      },
+      "nominalSize": { "width": "5'-4.5\"", "depth": "7'-5\"" },
+      "ceilingHeight": 8.5
+    },
+    {
+      "id": "closet",
+      "name": "Linen Closet",
+      "corner": "N-center-east",
+      "interiorBounds": {
+        "west": 1.67,
+        "east": 3.91,
+        "north": -13.46,
+        "south": -6.17
+      },
+      "nominalSize": { "width": "2'-8\"", "depth": "7'-5\"" },
+      "ceilingHeight": 8.5
+    },
+    {
+      "id": "bedroom1",
+      "name": "Bedroom 1",
+      "corner": "NE",
+      "interiorBounds": {
+        "west": 4.33,
+        "east": 14.25,
+        "north": -13.46,
+        "south": -2.88
+      },
+      "nominalSize": { "width": "10'-4.5\"", "depth": "10'-7\"" },
+      "ceilingHeight": 8.5
+    },
+    {
+      "id": "hallway",
+      "name": "Hallway",
+      "corner": "center",
+      "interiorBounds": {
+        "west": -3.71,
+        "east": 3.91,
+        "north": -5.96,
+        "south": -2.88
+      },
+      "nominalSize": { "width": "7'-8\"", "depth": "3'-1\"" },
+      "ceilingHeight": 8.5
+    },
+    {
+      "id": "living",
+      "name": "Living Room / Kitchen",
+      "corner": "S",
+      "interiorBounds": {
+        "west": -14.25,
+        "east": 14.25,
+        "north": -2.46,
+        "south": 13.46
+      },
+      "nominalSize": { "width": "28'-6\"", "depth": "15'-11\"" },
+      "ceilingHeight": 11.0,
+      "vaulted": true
+    }
+  ],
+
+  "interiorWalls": [
+    {
+      "id": "partition_w",
+      "desc": "E-W partition — south wall of Bedroom 2",
+      "axis": "EW",
+      "centerZ": -2.67,
+      "fromX": -14.5,
+      "toX": -3.92
+    },
+    {
+      "id": "partition_cw",
+      "desc": "E-W partition — west of hallway opening",
+      "axis": "EW",
+      "centerZ": -2.67,
+      "fromX": -3.92,
+      "toX": -1.5
+    },
+    {
+      "id": "partition_ce",
+      "desc": "E-W partition — east of hallway opening",
+      "axis": "EW",
+      "centerZ": -2.67,
+      "fromX": 1.5,
+      "toX": 4.12
+    },
+    {
+      "id": "partition_e",
+      "desc": "E-W partition — south wall of Bedroom 1",
+      "axis": "EW",
+      "centerZ": -2.67,
+      "fromX": 4.12,
+      "toX": 14.5
+    },
+    {
+      "id": "ns_bed2_bath",
+      "desc": "N-S wall between Bedroom 2 and Bathroom/Hallway",
+      "axis": "NS",
+      "centerX": -3.92,
+      "fromZ": -13.71,
+      "toZ": -2.67
+    },
+    {
+      "id": "ns_bath_closet",
+      "desc": "N-S wall between Bathroom and Closet",
+      "axis": "NS",
+      "centerX": 1.46,
+      "fromZ": -13.71,
+      "toZ": -2.67
+    },
+    {
+      "id": "ns_closet_bed1",
+      "desc": "N-S wall between Closet and Bedroom 1",
+      "axis": "NS",
+      "centerX": 4.12,
+      "fromZ": -13.71,
+      "toZ": -2.67
+    },
+    {
+      "id": "bath_south",
+      "desc": "E-W wall — south wall of Bathroom and Closet",
+      "axis": "EW",
+      "centerZ": -5.96,
+      "fromX": -3.92,
+      "toX": 4.12
+    }
+  ],
+
+  "exteriorDoors": [
+    {
+      "id": "front_entry",
+      "wall": "south",
+      "centerX": -5.0,
+      "width": 3.0,
+      "height": 6.83,
+      "sillHeight": 0,
+      "swing": "inward-east",
+      "notes": "Main entry door, swings inward to the right"
+    }
+  ],
+
+  "interiorDoors": [
+    {
+      "id": "bed2_door",
+      "wall": "partition_w",
+      "centerX": -5.5,
+      "width": 2.67,
+      "height": 6.67,
+      "swing": "into-bedroom2",
+      "notes": "Bedroom 2 entry from hallway zone"
+    },
+    {
+      "id": "bath_door",
+      "wall": "bath_south",
+      "centerX": -1.5,
+      "width": 2.5,
+      "height": 6.67,
+      "swing": "into-bathroom",
+      "notes": "Bathroom door from hallway"
+    },
+    {
+      "id": "closet_door",
+      "wall": "bath_south",
+      "centerX": 2.8,
+      "width": 2.0,
+      "height": 6.67,
+      "swing": "into-closet",
+      "notes": "Linen closet door from hallway"
+    },
+    {
+      "id": "bed1_door",
+      "wall": "partition_e",
+      "centerX": 5.5,
+      "width": 2.67,
+      "height": 6.67,
+      "swing": "into-bedroom1",
+      "notes": "Bedroom 1 entry from hallway zone"
+    }
+  ],
+
+  "windows": [
+    {
+      "id": "s_living_w",
+      "wall": "south",
+      "centerX": -9.0,
+      "width": 5.0,
+      "height": 4.0,
+      "sillHeight": 2.5,
+      "notes": "Large picture window — living area west"
+    },
+    {
+      "id": "s_kitchen_1",
+      "wall": "south",
+      "centerX": 5.5,
+      "width": 3.0,
+      "height": 3.5,
+      "sillHeight": 2.75,
+      "notes": "Kitchen window 1"
+    },
+    {
+      "id": "s_kitchen_2",
+      "wall": "south",
+      "centerX": 10.5,
+      "width": 3.0,
+      "height": 3.5,
+      "sillHeight": 2.75,
+      "notes": "Kitchen window 2"
+    },
+    {
+      "id": "n_bed2",
+      "wall": "north",
+      "centerX": -9.0,
+      "width": 3.0,
+      "height": 3.0,
+      "sillHeight": 3.0,
+      "notes": "Bedroom 2 rear window"
+    },
+    {
+      "id": "n_bath",
+      "wall": "north",
+      "centerX": -1.0,
+      "width": 2.0,
+      "height": 2.0,
+      "sillHeight": 4.5,
+      "notes": "Bathroom window (frosted)"
+    },
+    {
+      "id": "n_bed1",
+      "wall": "north",
+      "centerX": 9.0,
+      "width": 3.0,
+      "height": 3.5,
+      "sillHeight": 2.75,
+      "notes": "Bedroom 1 rear window"
+    },
+    {
+      "id": "w_bed2",
+      "wall": "west",
+      "centerZ": -8.0,
+      "width": 3.0,
+      "height": 3.5,
+      "sillHeight": 2.75,
+      "notes": "Bedroom 2 west window"
+    },
+    {
+      "id": "w_living",
+      "wall": "west",
+      "centerZ": 6.0,
+      "width": 3.0,
+      "height": 3.5,
+      "sillHeight": 2.75,
+      "notes": "Living area west window"
+    },
+    {
+      "id": "e_bed1",
+      "wall": "east",
+      "centerZ": -8.0,
+      "width": 3.0,
+      "height": 3.5,
+      "sillHeight": 2.75,
+      "notes": "Bedroom 1 east window"
+    },
+    {
+      "id": "e_kitchen",
+      "wall": "east",
+      "centerZ": 4.0,
+      "width": 3.0,
+      "height": 3.5,
+      "sillHeight": 2.75,
+      "notes": "Kitchen east window"
+    }
+  ],
+
+  "interiorObjects": [
+    {
+      "id": "kitchen_peninsula",
+      "type": "counter",
+      "position": { "x": 9.5, "z": 1.5 },
+      "size": { "w": 2.0, "d": 5.0, "h": 3.0 },
+      "notes": "Peninsula counter, runs N-S, west of east wall"
+    },
+    {
+      "id": "kitchen_counter_L",
+      "type": "counter",
+      "position": { "x": 13.5, "z": -0.5 },
+      "size": { "w": 2.0, "d": 8.0, "h": 3.0 },
+      "notes": "L-shaped counter along east wall (south kitchen)"
+    },
+    {
+      "id": "kitchen_counter_south",
+      "type": "counter",
+      "position": { "x": 11.0, "z": 12.5 },
+      "size": { "w": 7.0, "d": 2.0, "h": 3.0 },
+      "notes": "Counter along south wall in kitchen area"
+    },
+    {
+      "id": "bathtub",
+      "type": "fixture",
+      "position": { "x": -1.5, "z": -12.5 },
+      "size": { "w": 2.5, "d": 5.0, "h": 1.5 },
+      "notes": "Bathtub/shower along north wall of bathroom"
+    },
+    {
+      "id": "toilet",
+      "type": "fixture",
+      "position": { "x": -3.0, "z": -9.5 },
+      "size": { "w": 1.5, "d": 2.0, "h": 1.5 },
+      "notes": "Toilet on west side of bathroom"
+    },
+    {
+      "id": "vanity",
+      "type": "fixture",
+      "position": { "x": -0.5, "z": -6.8 },
+      "size": { "w": 3.0, "d": 1.75, "h": 2.83 },
+      "notes": "Vanity near south wall of bathroom"
+    },
+    {
+      "id": "washer",
+      "type": "appliance",
+      "position": { "x": -12.5, "z": -12.5 },
+      "size": { "w": 2.25, "d": 2.5, "h": 3.0 },
+      "notes": "Washing machine in Bedroom 2 laundry area"
+    },
+    {
+      "id": "dryer",
+      "type": "appliance",
+      "position": { "x": -10.0, "z": -12.5 },
+      "size": { "w": 2.25, "d": 2.5, "h": 3.0 },
+      "notes": "Dryer in Bedroom 2 laundry area"
+    }
+  ],
+
+  "roof": {
+    "type": "split-gable",
+    "ridgeAxis": "NS",
+    "overhang": 1.0,
+    "sections": [
+      {
+        "id": "west_vault",
+        "desc": "Higher vaulted gable over living west + Bed 2",
+        "westEaveX": -14.5,
+        "eastEaveX": 1.5,
+        "ridgeX": -6.5,
+        "eaveHeight": 8.5,
+        "ridgeHeight": 13.0
+      },
+      {
+        "id": "east_standard",
+        "desc": "Lower gable over kitchen + Bed 1 + closet",
+        "westEaveX": 1.5,
+        "eastEaveX": 14.5,
+        "ridgeX": 8.0,
+        "eaveHeight": 8.5,
+        "ridgeHeight": 10.5
+      }
+    ]
+  }
+}
