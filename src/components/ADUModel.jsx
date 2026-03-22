@@ -2,67 +2,59 @@ import { useMemo } from 'react'
 import * as THREE from 'three'
 import data from '../floorplan-data.json'
 
-// ─── Dimensions ──────────────────────────────────────────────────────────────
-// Building: L-shaped footprint. Main body 25' wide × 26'-3" deep.
-// NE bump-out for Bedroom 1 extends ~8.5' east of the main east wall.
-const W = 25.0
-const D = 26.25
-const HW = 12.5    // main half-width
-const HD = 13.125  // half-depth
+// ─── Building Footprint ──────────────────────────────────────────────────────
+// L-shaped with NE bump-out (Bed1) and NW notch (porch recess).
+//
+// Outline (viewed from above, +Z = south):
+//
+//       NOTCH_X
+//          │
+//   NW ────┤ notch ├──────────────── BUMP NE
+//   │porch │       │  Room  │  Bed1  │
+//   ├──────┘       │        │        │
+//   │ Bed2 │ Bath  │        │        │
+//   │      │       │        ├────────┘ BUMP SE
+//   │   Hallway    │        │
+//   ├──────────────┴────────┤
+//   │                       │
+//   │   Living / Kitchen    │
+//   │                       │
+//   SW ─────────────────── SE
+//            25'-0"
+
 const EXT = 0.5
 const INT = 0.33
 const WALL_H = 8.5
+const HW = 12.5    // half of 25' main body width
+const HD = 13.125  // half of 26'-3" main body depth
 
-// Interior faces of main rectangle
-const NF = -HD + EXT / 2  // -12.875 north interior
-const SF =  HD - EXT / 2  //  12.875 south interior
-const WF = -HW + EXT / 2  // -12.25  west interior
-const EF =  HW - EXT / 2  //  12.25  east interior (main body only)
+// ── Key X coordinates (exterior faces) ──
+const W_WALL  = -HW          // -12.5  west exterior
+const E_WALL  =  HW          //  12.5  main east exterior
+const BUMP_E  =  HW + 8.417 + EXT / 2  // ~21.17  bump-out east exterior
 
-// ── N-S interior wall X positions (north section, within main body) ──
-// Bed2 (6'-11½") | Bath (5'-4½") | Room (10'-6½")
-// Bed1 (8'-5") is the bump-out east of the main body
-const X_BED2_BATH   = WF + 6.958 + INT / 2                          // -5.127
-const X_BATH_ROOM   = X_BED2_BATH + INT / 2 + 5.375 + INT / 2      //  0.578
-// Room extends east to the main building east wall.
-// Room interior width: EF - (X_BATH_ROOM + INT/2) = 12.25 - 0.743 = 11.507
-// (this includes the 3' closet sub-area within the room)
+// NW notch X: porch is 13'-1" wide from west wall
+const NOTCH_X = W_WALL + 13.083  // 0.583
 
-// Room/Bed1 wall is at the main east wall position.
-// In the bump-out zone, this becomes an interior wall instead of exterior.
-const X_ROOM_BED1 = HW  // 12.5 — coincides with main east wall
+// ── Key Z coordinates (exterior faces) ──
+const S_WALL  =  HD          //  13.125  south exterior
+const N_WALL  = -HD          // -13.125  north exterior (Room/Bed1 section)
+const NOTCH_Z = N_WALL + 5.0 // -8.125   north wall of Bed2/Bath (set back 5')
 
-// Bump-out for Bed1: 8'-5" = 8.417' interior width
-const BED1_W = 8.417
-const BUMP_E = HW + BED1_W + EXT / 2  // 21.167 — bump east exterior face
-
-// ── E-W walls ──
-// Main partition: 11'-7½" from north interior face
-const PZ = NF + 11.625 + INT / 2  // -1.085
-
-// Bathroom south wall: 7' from north interior face
-const BATH_SZ = NF + 7.0 + INT / 2  // -5.71
-
-// Bump-out south wall: Bed1 is 10'-6" deep from north interior
-const BUMP_SZ = NF + 10.5 + EXT / 2  // -2.125 (exterior face)
-// Use the partition Z for the step since Bed1 extends roughly to the partition
-const STEP_Z = PZ  // where east wall steps out
+// East wall step: where the bump-out begins (roughly at the partition line)
+const STEP_Z  = -1.0
 
 // Colors
 const MAT = {
   exterior:   '#c8a882',
   interior:   '#f0e8d8',
   floor:      '#b8935a',
-  tile:       '#d4cfc8',
   roof:       '#5c3d1e',
   roofFascia: '#3d2710',
   window:     '#a8d4e8',
   door:       '#6b4c2a',
   trim:       '#e8e0d0',
   concrete:   '#9e9e9e',
-  counter:    '#8b7d6b',
-  fixture:    '#e0ddd8',
-  appliance:  '#cccccc',
   fireplace:  '#2a2a2a',
 }
 
@@ -106,154 +98,97 @@ function DoorMesh({ position, rotation = [0, 0, 0], width = 3, height = 6.83 }) 
   )
 }
 
-// ─── Foundation ──────────────────────────────────────────────────────────────
+// ─── Foundation (L-shaped) ───────────────────────────────────────────────────
 function Foundation() {
-  // L-shaped foundation: main + bump-out
   return (
     <group>
-      {/* Main body foundation */}
-      <mesh position={[0, -0.75, 0]} receiveShadow>
-        <boxGeometry args={[W + 1, 1.5, D + 1]} />
+      {/* Main body */}
+      <mesh position={[0, -0.75, (S_WALL + NOTCH_Z) / 2]} receiveShadow>
+        <boxGeometry args={[25 + 1, 1.5, S_WALL - NOTCH_Z + 1]} />
         <meshStandardMaterial color={MAT.concrete} roughness={0.95} />
       </mesh>
-      {/* Bump-out foundation */}
-      <mesh position={[(HW + BUMP_E) / 2, -0.75, (-HD + STEP_Z) / 2]} receiveShadow>
-        <boxGeometry args={[BUMP_E - HW + 1, 1.5, Math.abs(STEP_Z - (-HD)) + 1]} />
+      {/* North-east deep section (Room + Bed1) */}
+      <mesh position={[(NOTCH_X + BUMP_E) / 2, -0.75, (NOTCH_Z + N_WALL) / 2]} receiveShadow>
+        <boxGeometry args={[BUMP_E - NOTCH_X + 1, 1.5, NOTCH_Z - N_WALL + 1]} />
         <meshStandardMaterial color={MAT.concrete} roughness={0.95} />
       </mesh>
     </group>
   )
 }
 
-// ─── Interior Floor ──────────────────────────────────────────────────────────
+// ─── Floor (L-shaped) ────────────────────────────────────────────────────────
 function InteriorFloor() {
   return (
     <group>
       {/* Main body floor */}
-      <mesh position={[0, 0.02, 0]} receiveShadow>
-        <boxGeometry args={[W - EXT, 0.12, D - EXT]} />
+      <mesh position={[0, 0.02, (S_WALL + NOTCH_Z) / 2]} receiveShadow>
+        <boxGeometry args={[25 - EXT, 0.12, S_WALL - NOTCH_Z - EXT]} />
         <meshStandardMaterial color={MAT.floor} roughness={0.7} metalness={0.05} />
       </mesh>
-      {/* Bump-out floor */}
-      <mesh position={[(HW + BUMP_E) / 2, 0.02, (-HD + STEP_Z) / 2]} receiveShadow>
-        <boxGeometry args={[BUMP_E - HW - EXT / 2, 0.12, Math.abs(STEP_Z - (-HD)) - EXT]} />
+      {/* NE deep section floor */}
+      <mesh position={[(NOTCH_X + BUMP_E) / 2, 0.02, (NOTCH_Z + N_WALL) / 2]} receiveShadow>
+        <boxGeometry args={[BUMP_E - NOTCH_X - EXT, 0.12, NOTCH_Z - N_WALL - EXT]} />
         <meshStandardMaterial color={MAT.floor} roughness={0.7} metalness={0.05} />
       </mesh>
     </group>
   )
 }
 
-// ─── Exterior Walls (L-shaped) ───────────────────────────────────────────────
+// ─── Exterior Walls (8-segment L-shape) ──────────────────────────────────────
 function ExteriorWalls() {
-  // Front door: center-right of south wall
+  // Front door at X=3
   const doorX = 3.0
   const doorW = 3.0
   const doorH = 6.83
-  const doorL = doorX - doorW / 2
-  const doorR = doorX + doorW / 2
   const headerH = WALL_H - doorH
 
-  // The L-shape: main body + NE bump-out
-  // East wall splits: south section (living) is main east wall,
-  // north section opens into bump-out
-
-  const bumpW = BUMP_E - HW  // width of bump-out exterior
-
   return (
     <group>
-      {/* ── South wall (25' wide, with door) ── */}
-      <Wall position={[(-HW + doorL) / 2, WALL_H / 2, HD]} size={[doorL + HW, WALL_H, EXT]} />
-      <Wall position={[(doorR + HW) / 2, WALL_H / 2, HD]} size={[HW - doorR, WALL_H, EXT]} />
-      <Wall position={[doorX, WALL_H - headerH / 2, HD]} size={[doorW, headerH, EXT]} />
+      {/* 1. South wall (25' wide, with door) */}
+      <Wall position={[(W_WALL + doorX - doorW / 2) / 2, WALL_H / 2, S_WALL]} size={[doorX - doorW / 2 - W_WALL, WALL_H, EXT]} />
+      <Wall position={[(doorX + doorW / 2 + E_WALL) / 2, WALL_H / 2, S_WALL]} size={[E_WALL - doorX - doorW / 2, WALL_H, EXT]} />
+      <Wall position={[doorX, WALL_H - headerH / 2, S_WALL]} size={[doorW, headerH, EXT]} />
 
-      {/* ── West wall (full depth) ── */}
-      <Wall position={[-HW, WALL_H / 2, 0]} size={[EXT, WALL_H, D]} />
-
-      {/* ── East wall — LOWER section (living area, from south to step) ── */}
-      {(() => {
-        const segH = HD + STEP_Z  // from south wall to step
-        const segCenter = (HD + STEP_Z) / 2
-        return (
-          <Wall position={[HW, WALL_H / 2, segCenter]} size={[EXT, WALL_H, segH]} />
-        )
-      })()}
-
-      {/* ── Step wall (E-W, connects main east wall to bump east wall) ── */}
+      {/* 2. Main east wall — from south to STEP_Z */}
       <Wall
-        position={[(HW + BUMP_E) / 2, WALL_H / 2, STEP_Z]}
-        size={[bumpW, WALL_H, EXT]}
+        position={[E_WALL, WALL_H / 2, (S_WALL + STEP_Z) / 2]}
+        size={[EXT, WALL_H, S_WALL - STEP_Z]}
       />
 
-      {/* ── Bump-out east wall ── */}
-      {(() => {
-        const segH = Math.abs(STEP_Z - (-HD))
-        const segCenter = (STEP_Z + (-HD)) / 2
-        return (
-          <Wall position={[BUMP_E, WALL_H / 2, segCenter]} size={[EXT, WALL_H, segH]} />
-        )
-      })()}
-
-      {/* ── North wall (full width including bump-out) ── */}
+      {/* 3. Step wall — E-W connecting main east to bump east */}
       <Wall
-        position={[(-HW + BUMP_E) / 2, WALL_H / 2, -HD]}
-        size={[BUMP_E + HW, WALL_H, EXT]}
-      />
-    </group>
-  )
-}
-
-// ─── Interior Walls ──────────────────────────────────────────────────────────
-function InteriorWalls() {
-  // Hallway opening in partition: ~4' wide, centered between N-S walls
-  const hallCX = (X_BED2_BATH + X_BATH_ROOM) / 2 + 2  // shifted east toward center
-  const hallOpenW = 4.0
-
-  return (
-    <group>
-      {/* ═══ E-W Partition (Z = PZ) — across main body width ═══ */}
-      {/* West segment (Bed2 south wall) */}
-      <Wall
-        position={[(-HW + (hallCX - hallOpenW / 2)) / 2, WALL_H / 2, PZ]}
-        size={[(hallCX - hallOpenW / 2) + HW, WALL_H, INT]}
-        color={MAT.interior} castShadow={false}
-      />
-      {/* East segment (Room south wall, up to main east wall) */}
-      <Wall
-        position={[((hallCX + hallOpenW / 2) + HW) / 2, WALL_H / 2, PZ]}
-        size={[HW - (hallCX + hallOpenW / 2), WALL_H, INT]}
-        color={MAT.interior} castShadow={false}
+        position={[(E_WALL + BUMP_E) / 2, WALL_H / 2, STEP_Z]}
+        size={[BUMP_E - E_WALL, WALL_H, EXT]}
       />
 
-      {/* ═══ N-S Walls ═══ */}
-
-      {/* Bed2 | Bath (X = X_BED2_BATH) — north wall to partition */}
+      {/* 4. Bump-out east wall — from STEP_Z to north */}
       <Wall
-        position={[X_BED2_BATH, WALL_H / 2, (-HD + PZ) / 2]}
-        size={[INT, WALL_H, Math.abs(PZ - (-HD))]}
-        color={MAT.interior} castShadow={false}
+        position={[BUMP_E, WALL_H / 2, (STEP_Z + N_WALL) / 2]}
+        size={[EXT, WALL_H, Math.abs(N_WALL - STEP_Z)]}
       />
 
-      {/* Bath | Room (X = X_BATH_ROOM) — north wall to partition */}
+      {/* 5. North wall east section — from BUMP_E to NOTCH_X */}
       <Wall
-        position={[X_BATH_ROOM, WALL_H / 2, (-HD + PZ) / 2]}
-        size={[INT, WALL_H, Math.abs(PZ - (-HD))]}
-        color={MAT.interior} castShadow={false}
+        position={[(BUMP_E + NOTCH_X) / 2, WALL_H / 2, N_WALL]}
+        size={[BUMP_E - NOTCH_X, WALL_H, EXT]}
       />
 
-      {/* Room | Bed1 — at main east wall line, but interior wall in bump zone */}
-      {/* This wall runs from north wall to bump south wall (STEP_Z) */}
+      {/* 6. Notch wall (N-S) — steps south from N_WALL to NOTCH_Z */}
       <Wall
-        position={[X_ROOM_BED1, WALL_H / 2, (-HD + STEP_Z) / 2]}
-        size={[INT, WALL_H, Math.abs(STEP_Z - (-HD))]}
-        color={MAT.interior} castShadow={false}
+        position={[NOTCH_X, WALL_H / 2, (N_WALL + NOTCH_Z) / 2]}
+        size={[EXT, WALL_H, NOTCH_Z - N_WALL]}
       />
 
-      {/* ═══ Bathroom south wall (Z = BATH_SZ) ═══ */}
-      {/* Runs between Bed2/Bath wall and Bath/Room wall */}
+      {/* 7. North wall west section (Bed2/Bath) — from NOTCH_X to west */}
       <Wall
-        position={[(X_BED2_BATH + X_BATH_ROOM) / 2, WALL_H / 2, BATH_SZ]}
-        size={[X_BATH_ROOM - X_BED2_BATH, WALL_H, INT]}
-        color={MAT.interior} castShadow={false}
+        position={[(NOTCH_X + W_WALL) / 2, WALL_H / 2, NOTCH_Z]}
+        size={[NOTCH_X - W_WALL, WALL_H, EXT]}
+      />
+
+      {/* 8. West wall — from NOTCH_Z to south */}
+      <Wall
+        position={[W_WALL, WALL_H / 2, (NOTCH_Z + S_WALL) / 2]}
+        size={[EXT, WALL_H, S_WALL - NOTCH_Z]}
       />
     </group>
   )
@@ -261,11 +196,9 @@ function InteriorWalls() {
 
 // ─── Doors & Windows ─────────────────────────────────────────────────────────
 function OpeningsAndDoors() {
-  const sZ = HD + 0.01
-  const nZ = -HD - 0.01
-  const wX = -HW - 0.01
-  const eMainX = HW + 0.01
-  const eBumpX = BUMP_E + 0.01
+  const sZ = S_WALL + 0.01
+  const bumpEX = BUMP_E + 0.01
+  const wX = W_WALL - 0.01
 
   return (
     <group>
@@ -276,40 +209,42 @@ function OpeningsAndDoors() {
       <WindowMesh position={[-7.0, 4.5, sZ]} width={4.0} height={3.5} />
       <WindowMesh position={[9.0, 4.5, sZ]} width={4.0} height={4.0} />
 
-      {/* North windows */}
-      <WindowMesh position={[-9.0, 4.5, nZ]} rotation={[0, Math.PI, 0]} width={3.0} height={3.0} />
-      <WindowMesh position={[(X_BED2_BATH + X_BATH_ROOM) / 2, 5.5, nZ]} rotation={[0, Math.PI, 0]} width={2.0} height={2.0} />
-      <WindowMesh position={[6.0, 4.5, nZ]} rotation={[0, Math.PI, 0]} width={3.0} height={3.5} />
-      <WindowMesh position={[(HW + BUMP_E) / 2, 4.5, nZ]} rotation={[0, Math.PI, 0]} width={3.0} height={3.5} />
+      {/* North windows — east section */}
+      <WindowMesh position={[6.0, 4.5, N_WALL - 0.01]} rotation={[0, Math.PI, 0]} width={3.0} height={3.5} />
+      <WindowMesh position={[(E_WALL + BUMP_E) / 2, 4.5, N_WALL - 0.01]} rotation={[0, Math.PI, 0]} width={3.0} height={3.5} />
 
-      {/* West windows */}
-      <WindowMesh position={[wX, 4.5, -8.0]} rotation={[0, -Math.PI / 2, 0]} width={2.5} height={3.5} />
-      <WindowMesh position={[wX, 4.5, 5.0]} rotation={[0, -Math.PI / 2, 0]} width={3.0} height={3.5} />
+      {/* North windows — west section (Bed2) */}
+      <WindowMesh position={[-8.0, 4.5, NOTCH_Z - 0.01]} rotation={[0, Math.PI, 0]} width={3.0} height={3.0} />
 
-      {/* Main east wall windows (living area, south of step) */}
-      <WindowMesh position={[eMainX, 4.5, 5.0]} rotation={[0, Math.PI / 2, 0]} width={3.0} height={3.5} />
+      {/* West wall windows */}
+      <WindowMesh position={[wX, 4.5, -4.0]} rotation={[0, -Math.PI / 2, 0]} width={2.5} height={3.5} />
+      <WindowMesh position={[wX, 4.5, 6.0]} rotation={[0, -Math.PI / 2, 0]} width={3.0} height={3.5} />
 
-      {/* Bump-out east wall window (Bed1) */}
-      <WindowMesh position={[eBumpX, 4.5, -7.0]} rotation={[0, Math.PI / 2, 0]} width={3.0} height={3.5} />
+      {/* East wall window (living area) */}
+      <WindowMesh position={[E_WALL + 0.01, 4.5, 6.0]} rotation={[0, Math.PI / 2, 0]} width={3.0} height={3.5} />
+
+      {/* Bump east wall window (Bed1) */}
+      <WindowMesh position={[bumpEX, 4.5, -7.0]} rotation={[0, Math.PI / 2, 0]} width={3.0} height={3.5} />
     </group>
   )
 }
 
-// ─── Electric Fireplace (east wall of living area) ───────────────────────────
+// ─── Electric Fireplace ──────────────────────────────────────────────────────
 function ElectricFireplace() {
+  const ef = E_WALL - EXT / 2 - 0.15
   return (
-    <mesh position={[EF - 0.15, 3.5, 3.0]} receiveShadow>
+    <mesh position={[ef, 3.5, 3.0]} receiveShadow>
       <boxGeometry args={[0.5, 4.0, 3.0]} />
       <meshStandardMaterial color={MAT.fireplace} roughness={0.4} metalness={0.1} />
     </mesh>
   )
 }
 
-// ─── Split Gable Roof ────────────────────────────────────────────────────────
+// ─── Roof ────────────────────────────────────────────────────────────────────
 function SplitGableRoof() {
   const overhang = 1.0
   const panelThick = 0.4
-  const panelDepth = D + overhang * 2
+  const panelDepth = 26.25 + overhang * 2
 
   return (
     <group>
@@ -360,11 +295,11 @@ function GableEnds() {
     <group>
       {shapes.map(({ id, shape }) => (
         <group key={id}>
-          <mesh position={[0, 0, HD + 0.5]}>
+          <mesh position={[0, 0, S_WALL + 0.5]}>
             <shapeGeometry args={[shape]} />
             <meshStandardMaterial color={MAT.exterior} roughness={0.85} side={THREE.DoubleSide} />
           </mesh>
-          <mesh position={[0, 0, -HD - 0.5]}>
+          <mesh position={[0, 0, N_WALL - 0.5]}>
             <shapeGeometry args={[shape]} />
             <meshStandardMaterial color={MAT.exterior} roughness={0.85} side={THREE.DoubleSide} />
           </mesh>
@@ -431,21 +366,29 @@ function CoveredPorch({ position, rotation = [0, 0, 0], width, depth, roofVisibl
 
 // ─── Root ────────────────────────────────────────────────────────────────────
 export default function ADUModel({ roofVisible = true }) {
+  // NW porch sits in the notch: centered between W_WALL and NOTCH_X
+  const porchCenterX = (W_WALL + NOTCH_X) / 2
+
   return (
     <group>
       <Foundation />
       <InteriorFloor />
       <ExteriorWalls />
-      <InteriorWalls />
       <OpeningsAndDoors />
       <ElectricFireplace />
       {roofVisible && <SplitGableRoof />}
 
       {/* Front porch — 6' deep, centered on door */}
-      <CoveredPorch position={[3.0, 0, HD]} width={8} depth={6} roofVisible={roofVisible} />
+      <CoveredPorch position={[3.0, 0, S_WALL]} width={8} depth={6} roofVisible={roofVisible} />
 
-      {/* NW covered porch — 13'-1" × 5' */}
-      <CoveredPorch position={[-6.0, 0, -HD]} rotation={[0, Math.PI, 0]} width={13.08} depth={5} roofVisible={roofVisible} />
+      {/* NW porch — fits in the notch, extends north */}
+      <CoveredPorch
+        position={[porchCenterX, 0, NOTCH_Z]}
+        rotation={[0, Math.PI, 0]}
+        width={NOTCH_X - W_WALL - 0.5}
+        depth={4.5}
+        roofVisible={roofVisible}
+      />
     </group>
   )
 }
