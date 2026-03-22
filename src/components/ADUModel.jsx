@@ -436,11 +436,13 @@ function GableEnds() {
     <group>
       {shapes.map(({ id, shape }) => (
         <group key={id}>
-          <mesh position={[0, 0, HD + 0.5]} rotation={[Math.PI / 2, 0, 0]}>
+          {/* South gable — shape is in XY plane, positioned at south face */}
+          <mesh position={[0, 0, HD + 0.5]}>
             <shapeGeometry args={[shape]} />
             <meshStandardMaterial color={MAT.exterior} roughness={0.85} side={THREE.DoubleSide} />
           </mesh>
-          <mesh position={[0, 0, -HD - 0.5]} rotation={[-Math.PI / 2, 0, 0]}>
+          {/* North gable */}
+          <mesh position={[0, 0, -HD - 0.5]}>
             <shapeGeometry args={[shape]} />
             <meshStandardMaterial color={MAT.exterior} roughness={0.85} side={THREE.DoubleSide} />
           </mesh>
