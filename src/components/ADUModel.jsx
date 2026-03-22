@@ -33,13 +33,13 @@ const W_WALL  = -HW          // -12.5  west exterior
 const E_WALL  =  HW          //  12.5  main east exterior
 const BUMP_E  =  HW + 8.417 + EXT / 2  // ~21.17  bump-out east exterior
 
-// NW notch X: porch is 13'-1" wide from west wall
-const NOTCH_X = W_WALL + 13.083  // 0.583
+// NW notch X: only Bed2 is set back, not Bath. Porch extends past notch.
+const NOTCH_X = -5.127  // Bed2/Bath wall — notch is ~7.4' wide, porch (13'1") extends past it
 
 // ── Key Z coordinates (exterior faces) ──
 const S_WALL  =  HD          //  13.125  south exterior
 const N_WALL  = -HD          // -13.125  north exterior (Room/Bed1 section)
-const NOTCH_Z = N_WALL + 5.0 // -8.125   north wall of Bed2/Bath (set back 5')
+const NOTCH_Z = N_WALL + 1.5 // -11.625  north wall of Bed2 (set back ~1.5' from Room/Bed1 north wall)
 
 // East wall step: where the bump-out begins (roughly at the partition line)
 const STEP_Z  = -1.0
@@ -189,6 +189,63 @@ function ExteriorWalls() {
       <Wall
         position={[W_WALL, WALL_H / 2, (NOTCH_Z + S_WALL) / 2]}
         size={[EXT, WALL_H, S_WALL - NOTCH_Z]}
+      />
+    </group>
+  )
+}
+
+// ─── Interior Walls ──────────────────────────────────────────────────────────
+function InteriorWalls() {
+  // N-S wall positions
+  const X_BED2_BATH = NOTCH_X   // -5.127 (same as notch wall, continues south as interior)
+  const X_BATH_ROOM = X_BED2_BATH + INT / 2 + 5.375 + INT / 2  // ~0.578
+  const X_ROOM_BED1 = E_WALL    // 12.5 (at main east wall line)
+
+  // E-W partition: separates bedrooms from living. ~13' living depth from south.
+  const PZ = S_WALL - EXT / 2 - 13.0 - INT / 2  // ≈ -0.29
+  // Bathroom south wall: 7' from Bed2 north interior face
+  const BED2_NF = NOTCH_Z + EXT / 2  // Bed2 north interior
+  const BATH_SZ = BED2_NF + 7.0 + INT / 2
+
+  // Hallway opening in partition (~4' wide, centered around X = -2)
+  const hallL = -4.0
+  const hallR = 0.0
+
+  return (
+    <group>
+      {/* ── E-W Partition ── */}
+      {/* West of hallway (Bed2 south wall) */}
+      <Wall position={[(W_WALL + hallL) / 2, WALL_H / 2, PZ]} size={[hallL - W_WALL, WALL_H, INT]} color={MAT.interior} castShadow={false} />
+      {/* East of hallway (Room + Bed1 south wall, to main east wall) */}
+      <Wall position={[(hallR + E_WALL) / 2, WALL_H / 2, PZ]} size={[E_WALL - hallR, WALL_H, INT]} color={MAT.interior} castShadow={false} />
+
+      {/* ── N-S: Bed2 | Bath ── */}
+      {/* This continues south from the exterior notch wall */}
+      <Wall
+        position={[X_BED2_BATH, WALL_H / 2, (NOTCH_Z + PZ) / 2]}
+        size={[INT, WALL_H, Math.abs(PZ - NOTCH_Z)]}
+        color={MAT.interior} castShadow={false}
+      />
+
+      {/* ── N-S: Bath | Room ── */}
+      <Wall
+        position={[X_BATH_ROOM, WALL_H / 2, (N_WALL + PZ) / 2]}
+        size={[INT, WALL_H, Math.abs(PZ - N_WALL)]}
+        color={MAT.interior} castShadow={false}
+      />
+
+      {/* ── N-S: Room | Bed1 (at main east wall line) ── */}
+      <Wall
+        position={[X_ROOM_BED1, WALL_H / 2, (N_WALL + STEP_Z) / 2]}
+        size={[INT, WALL_H, Math.abs(STEP_Z - N_WALL)]}
+        color={MAT.interior} castShadow={false}
+      />
+
+      {/* ── Bathroom south wall ── */}
+      <Wall
+        position={[(X_BED2_BATH + X_BATH_ROOM) / 2, WALL_H / 2, BATH_SZ]}
+        size={[X_BATH_ROOM - X_BED2_BATH, WALL_H, INT]}
+        color={MAT.interior} castShadow={false}
       />
     </group>
   )
@@ -374,6 +431,7 @@ export default function ADUModel({ roofVisible = true }) {
       <Foundation />
       <InteriorFloor />
       <ExteriorWalls />
+      <InteriorWalls />
       <OpeningsAndDoors />
       <ElectricFireplace />
       {roofVisible && <SplitGableRoof />}
@@ -381,12 +439,12 @@ export default function ADUModel({ roofVisible = true }) {
       {/* Front porch — 6' deep, centered on door */}
       <CoveredPorch position={[3.0, 0, S_WALL]} width={8} depth={6} roofVisible={roofVisible} />
 
-      {/* NW porch — fits in the notch, extends north */}
+      {/* NW porch — 13'-1" wide × 5' deep, extends north past the notch */}
       <CoveredPorch
-        position={[porchCenterX, 0, NOTCH_Z]}
+        position={[(W_WALL + W_WALL + 13.083) / 2, 0, NOTCH_Z]}
         rotation={[0, Math.PI, 0]}
-        width={NOTCH_X - W_WALL - 0.5}
-        depth={4.5}
+        width={13.083}
+        depth={5}
         roofVisible={roofVisible}
       />
     </group>
