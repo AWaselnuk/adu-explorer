@@ -72,7 +72,7 @@ const styles = {
   },
 }
 
-export default function UI({ mode, setMode }) {
+export default function UI({ mode, setMode, roofVisible, setRoofVisible }) {
   const isWalk = mode === 'walk'
 
   return (
@@ -93,11 +93,14 @@ export default function UI({ mode, setMode }) {
             <button style={styles.btn(isWalk)} onClick={() => setMode('walk')}>
               Walk
             </button>
+            <button style={styles.btn(!roofVisible)} onClick={() => setRoofVisible((v) => !v)}>
+              {roofVisible ? 'Hide Roof' : 'Show Roof'}
+            </button>
           </div>
           <div style={styles.hint}>
             {isWalk
-              ? 'Click to capture mouse · WASD to move · ESC to release'
-              : 'Drag to rotate · Scroll to zoom · Right-drag to pan'}
+              ? 'Click to capture mouse · WASD to move · ESC to release · R toggle roof'
+              : 'Drag to rotate · Scroll to zoom · Right-drag to pan · R toggle roof'}
           </div>
         </div>
       </div>

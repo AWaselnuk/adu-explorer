@@ -1,6 +1,6 @@
 import { Canvas } from '@react-three/fiber'
 import { Sky, Environment } from '@react-three/drei'
-import { useState, Suspense } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import ADUModel from './components/ADUModel'
 import Forest from './components/Forest'
 import CameraControls from './components/CameraControls'
@@ -8,10 +8,19 @@ import UI from './components/UI'
 
 export default function App() {
   const [mode, setMode] = useState('orbit') // 'orbit' | 'walk'
+  const [roofVisible, setRoofVisible] = useState(true)
+
+  useEffect(() => {
+    const onKey = (e) => {
+      if (e.code === 'KeyR' && !e.repeat) setRoofVisible((v) => !v)
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [])
 
   return (
     <div style={{ width: '100vw', height: '100vh', position: 'relative' }}>
-      <UI mode={mode} setMode={setMode} />
+      <UI mode={mode} setMode={setMode} roofVisible={roofVisible} setRoofVisible={setRoofVisible} />
       <Canvas
         shadows
         camera={{ position: [45, 25, 45], fov: 55, near: 0.1, far: 1000 }}
@@ -43,7 +52,7 @@ export default function App() {
           <directionalLight position={[-30, 20, -20]} intensity={0.3} />
 
           {/* Scene */}
-          <ADUModel />
+          <ADUModel roofVisible={roofVisible} />
           <Forest />
 
           {/* Ground */}

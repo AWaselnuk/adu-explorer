@@ -14,9 +14,9 @@ function WalkControls() {
   const keys = useRef({})
   const locked = useRef(false)
   const pitch = useRef(0)
-  const yaw = useRef(Math.PI) // face south (toward front of house)
+  const yaw = useRef(0) // face south (+Z = front of house)
   const SPEED = 0.15
-  const LOOK_SENS = 0.002
+  const LOOK_SENS = 0.003
 
   useEffect(() => {
     // Start inside the living room area, eye height
@@ -62,9 +62,9 @@ function WalkControls() {
       Math.cos(yaw.current) * Math.cos(pitch.current)
     )
     const right = new THREE.Vector3(
-      Math.cos(yaw.current),
+      -Math.cos(yaw.current),
       0,
-      -Math.sin(yaw.current)
+      Math.sin(yaw.current)
     )
 
     if (keys.current['KeyW'] || keys.current['ArrowUp'])    camera.position.addScaledVector(dir, SPEED)

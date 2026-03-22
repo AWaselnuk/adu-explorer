@@ -568,18 +568,89 @@ function GableEnds() {
   )
 }
 
-// ─── Front Step ──────────────────────────────────────────────────────────────
-function FrontStep() {
+// ─── Covered Porch ──────────────────────────────────────────────────────────
+function CoveredPorch({ position, width, depth, roofVisible }) {
+  const postR = 0.2
+  const postH = 7.5
+  const roofThick = 0.3
+  const roofOverhang = 0.8
+  const roofW = width + roofOverhang * 2
+  const roofD = depth + roofOverhang
+  const roofPitch = 1.2
+
+  const hw = width / 2 - 0.5
+  const hd = depth - 0.5
+
   return (
-    <mesh position={[-5.0, -0.15, HD + 2]} receiveShadow>
-      <boxGeometry args={[5, 0.3, 3]} />
-      <meshStandardMaterial color={MAT.concrete} roughness={0.95} />
-    </mesh>
+    <group position={position}>
+      {/* Porch floor / pad */}
+      <mesh position={[0, -0.1, depth / 2]} receiveShadow>
+        <boxGeometry args={[width + 0.5, 0.25, depth + 0.5]} />
+        <meshStandardMaterial color={MAT.concrete} roughness={0.95} />
+      </mesh>
+
+      {/* Posts */}
+      {[
+        [-hw, 0],
+        [hw, 0],
+        [-hw, hd],
+        [hw, hd],
+      ].map(([px, pz], i) => (
+        <mesh key={i} position={[px, postH / 2, pz]} castShadow>
+          <boxGeometry args={[postR * 2, postH, postR * 2]} />
+          <meshStandardMaterial color={MAT.trim} roughness={0.6} />
+        </mesh>
+      ))}
+
+      {/* Decorative post caps */}
+      {[
+        [-hw, 0],
+        [hw, 0],
+        [-hw, hd],
+        [hw, hd],
+      ].map(([px, pz], i) => (
+        <mesh key={`cap-${i}`} position={[px, postH + 0.15, pz]}>
+          <boxGeometry args={[0.6, 0.3, 0.6]} />
+          <meshStandardMaterial color={MAT.trim} roughness={0.6} />
+        </mesh>
+      ))}
+
+      {/* Beam across top — front and back */}
+      <mesh position={[0, postH + 0.4, 0]}>
+        <boxGeometry args={[width + 0.3, 0.5, 0.4]} />
+        <meshStandardMaterial color={MAT.trim} roughness={0.6} />
+      </mesh>
+      <mesh position={[0, postH + 0.4, hd]}>
+        <boxGeometry args={[width + 0.3, 0.5, 0.4]} />
+        <meshStandardMaterial color={MAT.trim} roughness={0.6} />
+      </mesh>
+
+      {/* Roof — shed style, sloping away from house */}
+      {roofVisible && (
+        <group>
+          {/* Roof panel — tilted slightly down away from house */}
+          <mesh
+            position={[0, postH + 0.7 + roofPitch / 2, depth / 2]}
+            rotation={[Math.atan2(roofPitch, depth + roofOverhang), 0, 0]}
+            castShadow
+            receiveShadow
+          >
+            <boxGeometry args={[roofW, roofThick, Math.sqrt(roofD * roofD + roofPitch * roofPitch)]} />
+            <meshStandardMaterial color={MAT.roof} roughness={0.9} />
+          </mesh>
+          {/* Fascia trim along the outer edge */}
+          <mesh position={[0, postH + 0.55, depth - 0.1]} castShadow>
+            <boxGeometry args={[roofW, 0.5, 0.2]} />
+            <meshStandardMaterial color={MAT.roofFascia} roughness={0.9} />
+          </mesh>
+        </group>
+      )}
+    </group>
   )
 }
 
 // ─── Root Component ──────────────────────────────────────────────────────────
-export default function ADUModel() {
+export default function ADUModel({ roofVisible = true }) {
   return (
     <group>
       <Foundation />
@@ -588,8 +659,23 @@ export default function ADUModel() {
       <InteriorWalls />
       <OpeningsAndDoors />
       <InteriorObjects />
-      <SplitGableRoof />
-      <FrontStep />
+      {roofVisible && <SplitGableRoof />}
+
+      {/* Front entry porch — south wall at front door */}
+      <CoveredPorch
+        position={[-5.0, 0, HD]}
+        width={7}
+        depth={5}
+        roofVisible={roofVisible}
+      />
+
+      {/* Rear porch — north wall, center-east area */}
+      <CoveredPorch
+        position={[4.0, 0, -HD - 5]}
+        width={8}
+        depth={5}
+        roofVisible={roofVisible}
+      />
     </group>
   )
 }
