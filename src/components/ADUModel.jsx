@@ -33,7 +33,7 @@ const E_WALL = HW             //  12.5
 const BUMP_E = 21.17          //  bump-out east face
 const S_WALL = HD             //  13.125
 const N_WALL = -HD            // -13.125
-const NOTCH_X = -5.13         //  notch N-S wall X
+const NOTCH_X = 0.535          //  notch at bathroom east wall (X_BATH_EAST)
 const NOTCH_Z = N_WALL + 1.5  // -11.625 (Bed2 north wall, set back 1.5')
 const STEP_Z = -1.0           //  where bump-out begins on east wall
 
@@ -278,11 +278,28 @@ function ExteriorWalls() {
         size={[EXT, WALL_H, NOTCH_Z - N_WALL]}
       />
 
-      {/* 7. North wall west section — NOTCH_X to W_WALL at NOTCH_Z */}
-      <Wall
-        position={[(NOTCH_X + W_WALL) / 2, WALL_H / 2, NOTCH_Z]}
-        size={[NOTCH_X - W_WALL, WALL_H, EXT]}
-      />
+      {/* 7. North wall west section — NOTCH_X to W_WALL at NOTCH_Z, with door to porch */}
+      {(() => {
+        const nwDoorX = -8.5  // door position in entry hall north wall
+        const nwDoorW = 3.0
+        const nwHeaderH = WALL_H - 6.83
+        return (
+          <>
+            <Wall
+              position={[(W_WALL + (nwDoorX - nwDoorW / 2)) / 2, WALL_H / 2, NOTCH_Z]}
+              size={[(nwDoorX - nwDoorW / 2) - W_WALL, WALL_H, EXT]}
+            />
+            <Wall
+              position={[nwDoorX, WALL_H - nwHeaderH / 2, NOTCH_Z]}
+              size={[nwDoorW, nwHeaderH, EXT]}
+            />
+            <Wall
+              position={[((nwDoorX + nwDoorW / 2) + NOTCH_X) / 2, WALL_H / 2, NOTCH_Z]}
+              size={[NOTCH_X - (nwDoorX + nwDoorW / 2), WALL_H, EXT]}
+            />
+          </>
+        )
+      })()}
 
       {/* 8. West wall — NOTCH_Z to S_WALL */}
       <Wall
@@ -295,72 +312,153 @@ function ExteriorWalls() {
 
 // ─── Interior Walls ─────────────────────────────────────────────────────────
 function InteriorWalls() {
+  // Door opening dimensions
+  const doorW = 2.67
+  const doorH = 6.67
+  const headerH = WALL_H - doorH
+
+  // Shower divider Z: the shower/tub occupies the north ~3' of the bathroom
+  // The 5'-4½" bath width at the shower level, with "3'-0"" for the toilet zone
+  const showerDivZ = BATH_N_INTERIOR + 3.5  // ~-9.375
+
+  // Bed1/Bed2 shared doorway corner: a small wall jog where both doors can swing
+  const cornerW = 2.5  // width of the corner passage zone
+
   return (
     <group>
-      {/* ── E-W Partition (Z = -0.5) — divides north bedrooms from south living ── */}
-      {/* West segment: W_WALL to hallway opening */}
+      {/* ═══ E-W Partition (Z = PARTITION_Z) ═══ */}
+      {/* West segment: from west wall to NW room doorway */}
       <Wall
-        position={[(W_WALL + EXT / 2 + HALL_OPEN_L) / 2, WALL_H / 2, PARTITION_Z]}
-        size={[HALL_OPEN_L - (W_WALL + EXT / 2), WALL_H, INT]}
+        position={[(W_WALL + EXT / 2 + (X_BED2_BATH - doorW / 2)) / 2, WALL_H / 2, PARTITION_Z]}
+        size={[(X_BED2_BATH - doorW / 2) - (W_WALL + EXT / 2), WALL_H, INT]}
         color={MAT.interior} castShadow={false}
       />
-      {/* East segment: hallway opening to E_WALL */}
+      {/* Header above NW room doorway */}
       <Wall
-        position={[(HALL_OPEN_R + E_WALL - EXT / 2) / 2, WALL_H / 2, PARTITION_Z]}
-        size={[(E_WALL - EXT / 2) - HALL_OPEN_R, WALL_H, INT]}
+        position={[X_BED2_BATH, WALL_H - headerH / 2, PARTITION_Z]}
+        size={[doorW, headerH, INT]}
         color={MAT.interior} castShadow={false}
       />
+      {/* Middle segment: NW room door to hallway opening */}
+      <Wall
+        position={[((X_BED2_BATH + doorW / 2) + HALL_OPEN_L) / 2, WALL_H / 2, PARTITION_Z]}
+        size={[HALL_OPEN_L - (X_BED2_BATH + doorW / 2), WALL_H, INT]}
+        color={MAT.interior} castShadow={false}
+      />
+      {/* East segment: hallway opening to Bed1 doorway */}
+      {(() => {
+        const bed1DoorX = (X_BATH_EAST + E_WALL) / 2  // centered in Bed1's width
+        return (
+          <>
+            {/* From hallway opening east edge to Bed1 door */}
+            <Wall
+              position={[(HALL_OPEN_R + (bed1DoorX - doorW / 2)) / 2, WALL_H / 2, PARTITION_Z]}
+              size={[(bed1DoorX - doorW / 2) - HALL_OPEN_R, WALL_H, INT]}
+              color={MAT.interior} castShadow={false}
+            />
+            {/* Header above Bed1 doorway */}
+            <Wall
+              position={[bed1DoorX, WALL_H - headerH / 2, PARTITION_Z]}
+              size={[doorW, headerH, INT]}
+              color={MAT.interior} castShadow={false}
+            />
+            {/* From Bed1 door to east wall */}
+            <Wall
+              position={[((bed1DoorX + doorW / 2) + E_WALL - EXT / 2) / 2, WALL_H / 2, PARTITION_Z]}
+              size={[(E_WALL - EXT / 2) - (bed1DoorX + doorW / 2), WALL_H, INT]}
+              color={MAT.interior} castShadow={false}
+            />
+          </>
+        )
+      })()}
 
-      {/* ── N-S: Entry/WD | Bathroom wall (continues south from notch at NOTCH_X) ── */}
+      {/* ═══ N-S Walls ═══ */}
+
+      {/* Entry/WD | Bathroom wall (X_BED2_BATH = -5.13) */}
+      {/* Runs from NOTCH_Z to PARTITION_Z — solid, no door (doors are in partition & north wall) */}
       <Wall
         position={[X_BED2_BATH, WALL_H / 2, (NOTCH_Z + PARTITION_Z) / 2]}
         size={[INT, WALL_H, Math.abs(PARTITION_Z - NOTCH_Z)]}
         color={MAT.interior} castShadow={false}
       />
 
-      {/* ── N-S: Bathroom | Bedroom 1 east wall ── */}
-      <Wall
-        position={[X_BATH_EAST, WALL_H / 2, (N_WALL + PARTITION_Z) / 2]}
-        size={[INT, WALL_H, Math.abs(PARTITION_Z - N_WALL)]}
-        color={MAT.interior} castShadow={false}
-      />
+      {/* Bath | Bed1 wall (X_BATH_EAST ≈ 0.535) — with doorway from bath/hallway into Bed1 */}
+      {/* This wall runs from N_WALL to PARTITION_Z. Door near the hallway zone (south end). */}
+      {(() => {
+        const bathDoorZ = BATH_S_Z + 1.5  // door south of bathroom, in hallway zone
+        return (
+          <>
+            {/* North section (above door) */}
+            <Wall
+              position={[X_BATH_EAST, WALL_H / 2, (N_WALL + (bathDoorZ - doorW / 2)) / 2]}
+              size={[INT, WALL_H, (bathDoorZ - doorW / 2) - N_WALL]}
+              color={MAT.interior} castShadow={false}
+            />
+            {/* Header above door */}
+            <Wall
+              position={[X_BATH_EAST, WALL_H - headerH / 2, bathDoorZ]}
+              size={[INT, headerH, doorW]}
+              color={MAT.interior} castShadow={false}
+            />
+            {/* South section (below door to partition) */}
+            <Wall
+              position={[X_BATH_EAST, WALL_H / 2, ((bathDoorZ + doorW / 2) + PARTITION_Z) / 2]}
+              size={[INT, WALL_H, PARTITION_Z - (bathDoorZ + doorW / 2)]}
+              color={MAT.interior} castShadow={false}
+            />
+          </>
+        )
+      })()}
 
-      {/* ── N-S: Bedroom 1 | Bedroom 2 (at main east wall X=12.5) ── */}
-      {/* This interior wall runs from N_WALL to STEP_Z where the bump starts */}
-      <Wall
-        position={[E_WALL, WALL_H / 2, (N_WALL + STEP_Z) / 2]}
-        size={[INT, WALL_H, Math.abs(STEP_Z - N_WALL)]}
-        color={MAT.interior} castShadow={false}
-      />
+      {/* Bed1 | Bed2 wall (at main east wall X=12.5) */}
+      {/* Runs from N_WALL to STEP_Z, with doorway near south end for Bed2 access */}
+      {(() => {
+        const bed2DoorZ = STEP_Z + 1.5  // door near the south end (corner area)
+        return (
+          <>
+            {/* North section */}
+            <Wall
+              position={[E_WALL, WALL_H / 2, (N_WALL + (bed2DoorZ - doorW / 2)) / 2]}
+              size={[INT, WALL_H, (bed2DoorZ - doorW / 2) - N_WALL]}
+              color={MAT.interior} castShadow={false}
+            />
+            {/* Header */}
+            <Wall
+              position={[E_WALL, WALL_H - headerH / 2, bed2DoorZ]}
+              size={[INT, headerH, doorW]}
+              color={MAT.interior} castShadow={false}
+            />
+            {/* South section */}
+            <Wall
+              position={[E_WALL, WALL_H / 2, ((bed2DoorZ + doorW / 2) + STEP_Z) / 2]}
+              size={[INT, WALL_H, Math.abs(STEP_Z - (bed2DoorZ + doorW / 2))]}
+              color={MAT.interior} castShadow={false}
+            />
+          </>
+        )
+      })()}
 
-      {/* ── E-W: Bathroom south wall ── */}
-      {/* Spans from Entry/WD divider to Bath/Bed1 divider */}
+      {/* ═══ E-W: Bathroom south wall (Z = BATH_S_Z) ═══ */}
       <Wall
         position={[(X_BED2_BATH + X_BATH_EAST) / 2, WALL_H / 2, BATH_S_Z]}
         size={[X_BATH_EAST - X_BED2_BATH, WALL_H, INT]}
         color={MAT.interior} castShadow={false}
       />
 
-      {/* ── E-W: Bedroom 1 closet wall (2' deep closet at south end) ── */}
-      {/* Spans Bed1 width: from X_BATH_EAST to E_WALL */}
+      {/* ═══ E-W: Shower divider wall within bathroom ═══ */}
+      {/* Separates shower/tub (north) from toilet area (south) */}
+      {/* Has a doorway opening on the west side for shower access */}
       <Wall
-        position={[(X_BATH_EAST + E_WALL) / 2, WALL_H / 2, BED1_CLOSET_Z]}
-        size={[E_WALL - X_BATH_EAST, WALL_H, INT]}
+        position={[(X_BED2_BATH + 1.5 + X_BATH_EAST) / 2, WALL_H / 2, showerDivZ]}
+        size={[X_BATH_EAST - X_BED2_BATH - 1.5, WALL_H, INT]}
         color={MAT.interior} castShadow={false}
       />
 
-      {/* ── Entry hall closet wall (6' wide closet inset on west wall) ── */}
-      {/* The closet is 6' wide on the west wall of the Entry/WD room */}
-      {/* Closet depth ~2', runs N-S near the west wall */}
+      {/* ═══ E-W: Bedroom 1 closet wall ═══ */}
+      {/* 2' deep closet along the south wall of Bed1, spans full Bed1 width */}
       <Wall
-        position={[W_WALL + EXT / 2 + 2.0, WALL_H / 2, (NOTCH_Z + NOTCH_Z + 6.0) / 2]}
-        size={[INT, WALL_H, 6.0]}
-        color={MAT.interior} castShadow={false}
-      />
-      {/* Closet south return wall */}
-      <Wall
-        position={[(W_WALL + EXT / 2 + W_WALL + EXT / 2 + 2.0) / 2, WALL_H / 2, NOTCH_Z + 6.0]}
-        size={[2.0, WALL_H, INT]}
+        position={[(X_BATH_EAST + E_WALL) / 2, WALL_H / 2, BED1_CLOSET_Z]}
+        size={[E_WALL - X_BATH_EAST, WALL_H, INT]}
         color={MAT.interior} castShadow={false}
       />
     </group>
@@ -532,6 +630,40 @@ export default function ADUModel({ roofVisible = true }) {
       <OpeningsAndDoors />
       <ElectricFireplace />
       {roofVisible && <SplitGableRoof />}
+
+      {/* Bed2 bump-out roof — simple shed/gable matching house */}
+      {roofVisible && (
+        <group>
+          {(() => {
+            const bumpCX = (E_WALL + BUMP_E) / 2
+            const bumpW = BUMP_E - E_WALL
+            const bumpD = Math.abs(STEP_Z - N_WALL) + 2  // with overhang
+            const rise = 2.0
+            const run = bumpW / 2
+            const angle = Math.atan2(rise, run)
+            const hyp = Math.sqrt(run * run + rise * rise)
+            return (
+              <>
+                {/* West slope */}
+                <mesh position={[bumpCX - run / 2, WALL_H + rise / 2, (N_WALL + STEP_Z) / 2]} rotation={[0, 0, angle]} castShadow receiveShadow>
+                  <boxGeometry args={[hyp, 0.4, bumpD]} />
+                  <meshStandardMaterial color={MAT.roof} roughness={0.9} />
+                </mesh>
+                {/* East slope */}
+                <mesh position={[bumpCX + run / 2, WALL_H + rise / 2, (N_WALL + STEP_Z) / 2]} rotation={[0, 0, -angle]} castShadow receiveShadow>
+                  <boxGeometry args={[hyp, 0.4, bumpD]} />
+                  <meshStandardMaterial color={MAT.roof} roughness={0.9} />
+                </mesh>
+                {/* Ridge */}
+                <mesh position={[bumpCX, WALL_H + rise + 0.1, (N_WALL + STEP_Z) / 2]} castShadow>
+                  <boxGeometry args={[0.5, 0.25, bumpD]} />
+                  <meshStandardMaterial color={MAT.roofFascia} roughness={0.9} />
+                </mesh>
+              </>
+            )
+          })()}
+        </group>
+      )}
 
       {/* Front entry porch — 15'-10.5" wide × 6' deep, east edge at SE corner */}
       <CoveredPorch
