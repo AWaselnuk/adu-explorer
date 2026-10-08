@@ -46,6 +46,14 @@ export default function FireplaceApp() {
           ))}
         </div>
 
+        <aside className="explainer">
+          <strong>What the 21" rule misses:</strong> the G800P manual ties the clearance to how far the mantel sticks
+          out from the wall. 21" only covers a wood mantel 3" deep or less. The minimum grows to 25½" at 9" deep and
+          30" at 15" deep. A 6×6 mantel sticks out 6", so real wood needs about <strong>23¼"</strong>, or 25½" if
+          the inspector rounds up to the next row of the chart. A wood-look masonry mantel at 6" deep only needs
+          about 7½", so the 10" gap in the drawing already passes.
+        </aside>
+
         <div className="fine">
           <label className="slider">
             <span>Gap above opening: <strong>{fmtIn(clearance)}</strong></span>

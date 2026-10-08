@@ -63,6 +63,14 @@ button.active, .preset.active { border-color: var(--accent); box-shadow: inset 0
 .preset { display: grid; gap: 2px; text-align: left; padding: 10px 12px; }
 .preset span { color: var(--muted); font-size: 12px; }
 
+.explainer {
+  max-width: 900px;
+  padding: 10px 14px;
+  border-left: 3px solid var(--accent);
+  background: var(--panel);
+  border-radius: 0 8px 8px 0;
+}
+
 .fine { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 20px; }
 .slider { display: grid; gap: 4px; min-width: 260px; flex: 1; }
 .slider input { width: 100%; accent-color: var(--accent); }
