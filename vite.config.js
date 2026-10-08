@@ -5,4 +5,12 @@ import react from '@vitejs/plugin-react'
 export default defineConfig({
   plugins: [react()],
   base: '/adu-explorer/',
+  build: {
+    rollupOptions: {
+      input: {
+        main: new URL('./index.html', import.meta.url).pathname,
+        fireplace: new URL('./fireplace.html', import.meta.url).pathname,
+      },
+    },
+  },
 })
